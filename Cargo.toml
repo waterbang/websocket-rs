@@ -1,0 +1,16 @@
+[package]
+edition = "2021"
+name = "webSocket-rs"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = {version = "1.7.0", features = ["full"]}
+
+futures = {version = "0.3", default-features = false}
+serde = {version = "1.0.126", features = ["derive"]}
+serde_json = "1.0"
+tokio-stream = "0.1.6"
+uuid = {version = "0.4", features = ["serde", "v4"]}
+warp = "0.3.1"
