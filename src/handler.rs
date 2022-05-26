@@ -5,7 +5,7 @@ use warp::{http::StatusCode, reply::json, ws::Message, Reply};
 
 #[derive(Deserialize, Debug)]
 pub struct RegisterRequest {
-    user_id: usize,
+    public_key: String,
 }
 
 #[derive(Serialize, Debug)]
@@ -15,8 +15,8 @@ pub struct RegisterResponse {
 
 #[derive(Deserialize, Debug)]
 pub struct Event {
-    topic: String,
-    user_id: Option<usize>,
+    function: String,
+    public_key: Option<String>,
     message: String,
 }
 ///向连接的客户端广播消息的能力
@@ -25,11 +25,11 @@ pub async fn publish_handler(body: Event, clients: Clients) -> Result<impl Reply
         .read()
         .await
         .iter()
-        .filter(|(_, client)| match body.user_id {
-            Some(v) => client.user_id == v,
+        .filter(|(_, client)| match &body.public_key {
+            Some(v) => &client.public_key == v,
             None => true,
         })
-        .filter(|(_, client)| client.topics.contains(&body.topic))
+        .filter(|(_, client)| client.function.contains(&body.function))
         .for_each(|(_, client)| {
             if let Some(sender) = &client.sender {
                 let _ = sender.send(Ok(Message::text(body.message.clone())));
@@ -40,21 +40,21 @@ pub async fn publish_handler(body: Event, clients: Clients) -> Result<impl Reply
 }
 /// 注册
 pub async fn register_handler(body: RegisterRequest, clients: Clients) -> Result<impl Reply> {
-    let user_id = body.user_id;
+    let public_key = body.public_key;
     let uuid = Uuid::new_v4().simple().to_string();
 
-    register_client(uuid.clone(), user_id, clients).await;
+    register_client(uuid.clone(), public_key, clients).await;
     Ok(json(&RegisterResponse {
         url: format!("ws://127.0.0.1:8000/ws/{}", uuid),
     }))
 }
 
-async fn register_client(id: String, user_id: usize, clients: Clients) {
+async fn register_client(id: String, public_key: String, clients: Clients) {
     clients.write().await.insert(
         id,
         Client {
-            user_id,
-            topics: vec![String::from("cats")],
+            public_key,
+            function: vec![String::from("openScanner")],
             sender: None,
         },
     );
