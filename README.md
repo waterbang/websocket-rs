@@ -2,7 +2,7 @@
 
 #### 启动 terminal 1
 
-cargo run
+    cargo run
 
 #### 启动 terminal 2 注册客户端
 
